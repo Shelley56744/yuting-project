@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yuting_Thoughts_Draft.exe - [未命名草稿]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ============ 全局樣式 ============ */
+        body {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            font-family: "Courier New", monospace;
+            color: #58a6ff;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ============ 音量控制浮窗 ============ */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 11000;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .audio-toggle {
+            width: 40px;
+            height: 40px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #58a6ff;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .audio-toggle:hover {
+            border-color: #58a6ff;
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+        }
+
+        .audio-toggle.muted {
+            opacity: 0.5;
+        }
+
+        /* ============ 螢幕故障效果 ============ */
+        @keyframes glitch {
+            0% {
+                background: rgba(88, 166, 255, 0.2);
+                opacity: 1;
+            }
+            25% {
+                background: rgba(255, 0, 0, 0.1);
+                opacity: 0.7;
+            }
+            50% {
+                background: rgba(88, 166, 255, 0.15);
+                opacity: 0.5;
+            }
+            75% {
+                background: rgba(0, 255, 0, 0.1);
+                opacity: 0.7;
+            }
+            100% {
+                background: transparent;
+                opacity: 0;
+            }
+        }
+
+        .glitch-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            animation: glitch 0.3s ease-in-out;
+            z-index: 8888;
+        }
+
+        /* ============ 全螢幕影片覆蓋層 ============ */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-overlay.active {
+            display: flex;
+        }
+
+        .video-overlay video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ============ 備用窒息效果 ============ */
+        .fallback-suffocation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9998;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .fallback-suffocation.active {
+            display: flex;
+        }
+
+        .suffocation-text {
+            font-size: 42px;
+            color: #fff;
+            text-align: center;
+            opacity: 0;
+            animation: textFloat 2s ease-in-out infinite;
+            line-height: 1.8;
+        }
+
+        .suffocation-text:nth-child(1) {
+            animation-delay: 0s;
+            color: #f85149;
+        }
+
+        .suffocation-text:nth-child(2) {
+            animation-delay: 1s;
+            color: #58a6ff;
+        }
+
+        .suffocation-text:nth-child(3) {
+            animation-delay: 2s;
+            color: #f0883e;
+        }
+
+        @keyframes textFloat {
+            0%, 100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============ 主視窗容器 ============ */
+        .window-wrapper {
+            position: relative;
+            width: 90%;
+            max-width: 850px;
+            min-height: 520px;
+            background: #0d1117;
+            border: 2px solid #30363d;
+            border-radius: 6px;
+            box-shadow: 0 0 30px rgba(88, 166, 255, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            animation: windowFadeIn 0.6s ease-out;
+            z-index: 100;
+        }
+
+        @keyframes windowFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 視窗淡出動畫 */
+        .window-wrapper.fade-out {
+            animation: windowFadeOut 0.8s ease-in forwards;
+        }
+
+        @keyframes windowFadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+                pointer-events: none;
+            }
+        }
+
+        /* ============ 視窗標題列（絕對位置） ============ */
+        .window-header {
+            /* 強制絕對位置 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            
+            /* 固定高度 */
+            height: 36px;
+            
+            /* 樣式 */
+            background: linear-gradient(90deg, #1c2128 0%, #0d1117 100%);
+            border-bottom: 1px solid #30363d;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px 4px 0 0;
+            user-select: none;
+            z-index: 1001;
+        }
+
+        .window-title {
+            font-size: 15px;
+            color: #8b949e;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .control-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: default;
+            transition: all 0.2s;
+        }
+
+        .control-btn.minimize {
+            background: #dbab09;
+        }
+
+        .control-btn.maximize {
+            background: #31c754;
+        }
+
+        .control-btn.close {
+            background: #ff5f56;
+        }
+
+        /* ============ 視窗內容 ============ */
+        .window-content {
+            /* 跳過頭部空間 */
+            padding-top: 56px;
+            padding-left: 32px;
+            padding-right: 32px;
+            padding-bottom: 32px;
+            
+            /* 內容區域 */
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .window-content h2 {
+            color: #58a6ff;
+            font-size: 22px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        /* ============ 輸入框 ============ */
+        #messageInput {
+            width: 100%;
+            height: 140px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            color: #58a6ff;
+            font-family: "Courier New", monospace;
+            font-size: 19px;
+            padding: 16px;
+            margin-bottom: 16px;
+            resize: none;
+            transition: all 0.3s;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+        }
+
+        #messageInput::placeholder {
+            color: #6e7681;
+        }
+
+        /* ============ 按鈕容器 ============ */
+        .button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ============ 按鈕樣式 ============ */
+        .btn {
+            padding: 14px 18px;
+            background: #238636;
+            border: 1px solid #3fb950;
+            border-radius: 4px;
+            color: #fff;
+            font-family: "Courier New", monospace;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: normal;
+        }
+
+        .btn:hover:not(.disabled) {
+            background: #2ea043;
+            box-shadow: 0 0 12px rgba(63, 185, 80, 0.4);
+        }
+
+        .btn:active:not(.disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn.disabled {
+            cursor: not-allowed;
+            background: #0d1117;
+            border-color: #f85149;
+            color: #f85149;
+            opacity: 0.7;
+        }
+
+        .btn.disabled::after {
+            content: " ✗";
+        }
+
+        /* ============ 終局螢幕 ============ */
+        .final-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            padding: 40px;
+        }
+
+        .final-screen.active {
+            display: flex;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .typewriter-text {
+            color: #fff;
+            font-family: "Courier New", monospace;
+            font-size: 30px;
+            text-align: center;
+            line-height: 1.8;
+            max-width: 900px;
+            white-space: pre-wrap;
+            letter-spacing: 1px;
+            min-height: 80px;
+        }
+
+        .breathing-arrow {
+            color: #58a6ff;
+            font-size: 36px;
+            animation: breathing 2s infinite;
+        }
+
+        @keyframes breathing {
+            0%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* ============ 選擇框架容器 ============ */
+        .choice-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10001;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .choice-screen.active {
+            display: flex;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .choice-title {
+            color: #58a6ff;
+            font-family: "Courier New", monospace;
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* ============ 選擇卡片組 ============ */
+        .choice-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .choice-card {
+            background: #0d1117;
+            border: 2px solid #30363d;
+            border-radius: 6px;
+            padding: 28px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .choice-card:hover {
+            border-color: #58a6ff;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .choice-card.selected {
+            border-color: #3fb950;
+            background: rgba(63, 185, 80, 0.1);
+            box-shadow: 0 0 20px rgba(63, 185, 80, 0.3);
+        }
+
+        .choice-icon {
+            font-size: 42px;
+            text-align: center;
+        }
+
+        .choice-label {
+            color: #58a6ff;
+            font-family: "Courier New", monospace;
+            font-size: 22px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .choice-description {
+            color: #8b949e;
+            font-family: "Courier New", monospace;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        /* ============ 選擇按鈕組容器 ============ */
+        .choice-button-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ============ 選擇確認按鈕 ============ */
+        .choice-submit-btn {
+            padding: 14px 32px;
+            background: #238636;
+            border: 1px solid #3fb950;
+            border-radius: 4px;
+            color: #fff;
+            font-family: "Courier New", monospace;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .choice-submit-btn:hover:not(:disabled) {
+            background: #2ea043;
+            box-shadow: 0 0 16px rgba(63, 185, 80, 0.4);
+        }
+
+        .choice-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ============ 返回按鈕 ============ */
+        .back-btn {
+            padding: 14px 32px;
+            background: transparent;
+            border: 1px solid #6e7681;
+            border-radius: 4px;
+            color: #8b949e;
+            font-family: "Courier New", monospace;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn:hover {
+            border-color: #58a6ff;
+            color: #58a6ff;
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.2);
+        }
+
+        .back-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* ============ 結局結果螢幕 ============ */
+        .outcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10002;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .outcome-screen.active {
+            display: flex;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .outcome-title {
+            color: #58a6ff;
+            font-family: "Courier New", monospace;
+            font-size: 30px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .outcome-content {
+            color: #fff;
+            font-family: "Courier New", monospace;
+            font-size: 20px;
+            line-height: 1.9;
+            max-width: 760px;
+            text-align: center;
+            white-space: pre-wrap;
+        }
+
+        .outcome-footer {
+            color: #6e7681;
+            font-family: "Courier New", monospace;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        /* ============ 底部提示文字 ============ */
+        .hint-text {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #58a6ff;
+            font-family: "Courier New", monospace;
+            font-size: 17px;
+            text-align: center;
+            opacity: 0;
+            animation: hintFade 3s ease-in-out forwards;
+            animation-delay: 4s;
+            z-index: 9500;
+        }
+
+        @keyframes hintFade {
+            0% {
+                opacity: 0;
+            }
+            50%, 100% {
+                opacity: 0.7;
+                animation-timing-function: steps(1, end);
+            }
+        }
+
+        .hint-text span {
+            display: block;
+            animation: breathing 2s infinite;
+        }
+
+        /* ============ 載入覆蓋層 ============ */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, 0.95);
+            z-index: 12000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .loading-text {
+            color: #58a6ff;
+            font-family: "Courier New", monospace;
+            font-size: 19px;
+            animation: blinking 1s infinite;
+        }
+
+        @keyframes blinking {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.3; }
+        }
+
+        /* ============ 響應式設計 ============ */
+        @media (max-width: 768px) {
+            .window-wrapper {
+                width: 95%;
+                height: auto;
+                min-height: 400px;
+            }
+
+            .window-content {
+                padding-top: 50px;
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 16px;
+            }
+
+            .window-content h2 {
+                font-size: 18px;
+            }
+
+            .button-container {
+                grid-template-columns: 1fr;
+            }
+
+            .choice-container {
+                grid-template-columns: 1fr;
+            }
+
+            .typewriter-text {
+                font-size: 22px;
+            }
+
+            .choice-title {
+                font-size: 21px;
+            }
+
+            .audio-control {
+                top: 10px;
+                right: 10px;
+            }
+
+            #messageInput {
+                font-size: 17px;
+                height: 110px;
+            }
+
+            .btn {
+                font-size: 16px;
+                padding: 12px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============ 載入覆蓋層 ============ -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">初始化系統中...</div>
+        <div class="loading-text">加載音頻資源...</div>
+    </div>
+
+    <!-- 音效全部由 Web Audio API 即時合成，不需要音檔 -->
+
+    <!-- 音量控制 -->
+    <div class="audio-control">
+        <button class="audio-toggle" id="audioToggle" title="靜音/解除">🔊</button>
+    </div>
+
+    <!-- 全螢幕影片覆蓋層 -->
+    <div class="video-overlay" id="videoOverlay">
+        <video id="fullscreenVideo" autoplay playsinline disablePictureInPicture>
+            <source src="path/to/your/yuting_suffocation_video.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- 備用窒息效果 -->
+    <div class="fallback-suffocation" id="fallbackSuffocation">
+        <div class="suffocation-text">做遊戲有前途嗎？</div>
+        <div class="suffocation-text">起薪有表哥高嗎？</div>
+        <div class="suffocation-text">這是在玩！</div>
+    </div>
+
+    <!-- 終局螢幕 -->
+    <div class="final-screen" id="finalScreen">
+        <div class="typewriter-text" id="typewriterText"></div>
+        <div class="breathing-arrow" id="continueArrow" style="cursor: pointer;" title="繼續">↓</div>
+    </div>
+
+    <!-- 選擇螢幕 -->
+    <div class="choice-screen" id="choiceScreen">
+        <div class="choice-title" id="choiceTitle">
+            如果你是宇廷，在這個時刻，你會選擇什麼？
+        </div>
+
+        <div class="choice-container">
+            <div class="choice-card" data-choice="A">
+                <div class="choice-icon">💌</div>
+                <div class="choice-label">聆聽妹妹</div>
+                <div class="choice-description">
+                    走向床邊，打開妹妹的信，接受支持，並認可自己的選擇
+                </div>
+            </div>
+
+            <div class="choice-card" data-choice="B">
+                <div class="choice-icon">📋</div>
+                <div class="choice-label">重寫規則</div>
+                <div class="choice-description">
+                    回到書桌，改寫自己的遊戲，平衡夢想與責任
+                </div>
+            </div>
+
+            <div class="choice-card" data-choice="C">
+                <div class="choice-icon">🎧</div>
+                <div class="choice-label">面對質疑</div>
+                <div class="choice-description">
+                    戴上耳機，聽完所有的聲音，選擇自己的路
+                </div>
+            </div>
+        </div>
+
+        <div class="choice-button-group">
+            <button class="back-btn" id="backFromChoiceBtn">
+                ← 返回
+            </button>
+            <button class="choice-submit-btn" id="submitChoiceBtn" disabled>
+                確認選擇 →
+            </button>
+        </div>
+    </div>
+
+    <!-- 結局結果螢幕 -->
+    <div class="outcome-screen" id="outcomeScreen">
+        <div class="outcome-title" id="outcomeTitle">已記錄</div>
+        <div class="outcome-content" id="outcomeContent"></div>
+        <div class="outcome-footer">
+            <span>感謝你與宇廷一起經歷這個迷惘的夜晚。</span><br>
+            <span>帶著你的選擇，離開房間。</span>
+        </div>
+        <div class="choice-button-group" style="margin-top: 60px;">
+            <button class="back-btn" id="backFromOutcomeBtn">
+                ← 回到選擇
+            </button>
+            <button class="choice-submit-btn" id="restartBtn" style="background: #f0883e; border-color: #f0883e;">
+                🔄 重新開始
+            </button>
+        </div>
+    </div>
+
+    <!-- 提示文字 -->
+    <div class="hint-text" id="hintText">
+        <span>請戴上床邊的耳機</span>
+        <span>聽聽宇廷在深夜寫下的聲音...</span>
+    </div>
+
+    <!-- 主視窗 -->
+    <div class="window-wrapper" id="mainWindow">
+        <!-- 視窗標題列 -->
+        <div class="window-header">
+            <span class="window-title">Yuting_Thoughts_Draft.exe - [未命名草稿]</span>
+            <div class="window-controls">
+                <div class="control-btn minimize"></div>
+                <div class="control-btn maximize"></div>
+                <div class="control-btn close"></div>
+            </div>
+        </div>
+
+        <!-- 視窗內容 -->
+        <div class="window-content">
+            <h2>你想對家人說什麼？請在此輸入你的回覆：</h2>
+            <textarea id="messageInput" placeholder="點擊此處輸入你想說的話..." readonly></textarea>
+            
+            <div class="button-container">
+                <button class="btn" id="btnA">傳送我的真實想法</button>
+                <button class="btn" id="btnB">關閉長輩訊息提醒</button>
+                <button class="btn" id="btnC">堅持選擇遊戲公司 Offer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ 系統初始化檢查 ============
+        const DOM_READY_CHECK = new Promise((resolve) => {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', resolve);
+            } else {
+                resolve();
+            }
+        });
+
+        // ============ 音頻配置 ============
+        const AUDIO_CONFIG = {
+            masterVolume: 1.0,
+            bgAmbienceVolume: 0.4,
+            sfxVolume: 0.6,
+            typewriterVolume: 0.3,
+            pressureVolume: 0.5,
+            calmVolume: 0.5
+        };
+
+        // ============ 主要配置 ============
+        const CONFIG = {
+            VIDEO_SRC: 'path/to/your/yuting_suffocation_video.mp4',
+            COMPROMISE_TEXT: '好...我知道了...我會再考慮...',
+            FINAL_TEXT: `無論你點擊哪裡，規則都是別人寫好的。
+但，這真的是你要的嗎？`,
+            
+            OUTCOMES: {
+                A: {
+                    title: '【妹妹的信】',
+                    content: `你拿起那張摺了無數次的信紙。
+
+「哥，我就知道你可以！去做你想做的事。」
+
+那一刻，你明白了。
+接受支持，不是軟弱。
+堅持自己，不是背叛。
+
+你回信寫道：
+「謝謝你，我會做出讓自己不後悔的選擇。」
+
+你戴上耳機，按下 PLAY。
+遊戲，開始了。`
+                },
+                B: {
+                    title: '【重寫規則】',
+                    content: `你回到書桌，打開了遊戲的原始碼。
+
+眼前是無限的可能，
+每一行代碼都是你的決定。
+
+你開始改寫：
+不是「逃避」家庭期待，
+而是「重新定義」成功的意義。
+
+獨立遊戲開發，不只是玩樂。
+這是一場關於自我的系統設計。
+
+你打下最後一行字：
+「做最真實的自己、做喜歡的事。」
+
+遊戲存檔。
+新的難度等級，開始了。`
+                },
+                C: {
+                    title: '【面對質疑】',
+                    content: `你戴上耳機，聲音從四方八方湧來：
+
+「做遊戲有前途嗎？」
+「起薪有表哥高嗎？」
+「這是在玩！」
+
+但這一次，你沒有逃避。
+你轉身，面對所有的質疑。
+
+你大聲說出來：
+「也許沒有、也許失敗。
+但至少，這是 我的 選擇。」
+
+音量漸消，
+剩下的，只有自己的心跳聲。
+
+你再次按下 PLAY。
+這次，你知道自己在玩什麼遊戲。`
+                }
+            },
+            
+            GLITCH_DURATION: 300,
+            VIDEO_DELAY: 600,
+            TYPEWRITER_SPEED: 50,
+            VIDEO_FALLBACK_TIMEOUT: 5000,
+            CHOICE_REVEAL_DELAY: 2000
+        };
+
+        // ============ 應用狀態 ============
+        const appState = {
+            videoPlaying: false,
+            finalScreenShowing: false,
+            choiceScreenShowing: false,
+            selectedChoice: null,
+            buttonsDisabled: false,
+            audioMuted: false,
+            systemReady: false,
+            outcomeShowing: false
+        };
+
+        // ============ DOM 元素引用 ============
+        const elements = {
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            messageInput: document.getElementById('messageInput'),
+            btnA: document.getElementById('btnA'),
+            btnB: document.getElementById('btnB'),
+            btnC: document.getElementById('btnC'),
+            videoOverlay: document.getElementById('videoOverlay'),
+            fullscreenVideo: document.getElementById('fullscreenVideo'),
+            fallbackSuffocation: document.getElementById('fallbackSuffocation'),
+            mainWindow: document.getElementById('mainWindow'),
+            finalScreen: document.getElementById('finalScreen'),
+            typewriterText: document.getElementById('typewriterText'),
+            choiceScreen: document.getElementById('choiceScreen'),
+            choiceCards: document.querySelectorAll('.choice-card'),
+            submitChoiceBtn: document.getElementById('submitChoiceBtn'),
+            outcomeScreen: document.getElementById('outcomeScreen'),
+            outcomeTitle: document.getElementById('outcomeTitle'),
+            outcomeContent: document.getElementById('outcomeContent'),
+            hintText: document.getElementById('hintText'),
+            audioToggle: document.getElementById('audioToggle')
+        };
+
+        // ============ 合成音效引擎 ============
+        // 全部用 Web Audio API 即時合成，不需要任何音檔
+        const synth = (() => {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            let ctx = null;
+            let master = null;
+            let noiseBuffer = null;
+            let ambience = null;
+            let pressure = null;
+            let calm = null;
+
+            function getCtx() {
+                if (!AudioCtx) return null;
+                if (!ctx) {
+                    ctx = new AudioCtx();
+                    master = ctx.createGain();
+                    master.gain.value = AUDIO_CONFIG.masterVolume;
+                    // 壓縮器：多個音效疊在一起時避免爆音
+                    const limiter = ctx.createDynamicsCompressor();
+                    master.connect(limiter);
+                    limiter.connect(ctx.destination);
+
+                    // 1 秒白噪音，給打字聲、雜訊、環境底噪共用
+                    noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+                    const data = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+                }
+                return ctx;
+            }
+
+            // 瀏覽器規定使用者操作過後才能出聲
+            function resume() {
+                const c = getCtx();
+                if (c && c.state === 'suspended') c.resume();
+            }
+
+            function isRunning() {
+                return ctx && ctx.state === 'running';
+            }
+
+            function bus(volume, dest = master) {
+                const g = ctx.createGain();
+                g.gain.value = volume;
+                g.connect(dest);
+                return g;
+            }
+
+            // 單音：快速起音 + 指數衰減，可加滑音
+            function tone(dest, { type = 'sine', freq, freqEnd, at = 0, attack = 0.005, decay = 0.2, peak = 0.3 }) {
+                const t = ctx.currentTime + at;
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, t);
+                if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, t + attack + decay);
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(peak, t + attack);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+                osc.connect(g);
+                g.connect(dest);
+                osc.start(t);
+                osc.stop(t + attack + decay + 0.05);
+            }
+
+            // 濾波後的短促雜訊
+            function burst(dest, { at = 0, attack = 0.002, decay = 0.05, peak = 0.2, filter = 'bandpass', freq = 3000, q = 1 }) {
+                const t = ctx.currentTime + at;
+                const src = ctx.createBufferSource();
+                src.buffer = noiseBuffer;
+                const f = ctx.createBiquadFilter();
+                f.type = filter;
+                f.frequency.value = freq;
+                f.Q.value = q;
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(peak, t + attack);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+                src.connect(f);
+                f.connect(g);
+                g.connect(dest);
+                src.start(t, Math.random() * 0.5);
+                src.stop(t + attack + decay + 0.05);
+            }
+
+            // 循環播放的濾波雜訊（底噪、嘶聲）
+            function noiseLoop(dest, filter, freq, gain) {
+                const src = ctx.createBufferSource();
+                src.buffer = noiseBuffer;
+                src.loop = true;
+                const f = ctx.createBiquadFilter();
+                f.type = filter;
+                f.frequency.value = freq;
+                const g = ctx.createGain();
+                g.gain.value = gain;
+                src.connect(f);
+                f.connect(g);
+                g.connect(dest);
+                src.start();
+                return src;
+            }
+
+            // 心跳：低頻「咚-咚」
+            function heartbeat(dest, at = 0, strength = 1) {
+                tone(dest, { freq: 70, freqEnd: 40, at, decay: 0.12, peak: 0.7 * strength });
+                tone(dest, { freq: 60, freqEnd: 35, at: at + 0.18, decay: 0.14, peak: 0.5 * strength });
+            }
+
+            function fadeOutAndStop(handle) {
+                const { out, nodes } = handle;
+                const t = ctx.currentTime;
+                out.gain.cancelScheduledValues(t);
+                out.gain.setValueAtTime(out.gain.value, t);
+                out.gain.linearRampToValueAtTime(0, t + 0.4);
+                nodes.forEach(n => n.stop(t + 0.5));
+                setTimeout(() => out.disconnect(), 700);
+            }
+
+            const SOUNDS = {
+                // 冰冷的短促點擊
+                click(out) {
+                    tone(out, { type: 'square', freq: 1400, freqEnd: 900, decay: 0.04, peak: 0.12 });
+                    burst(out, { filter: 'highpass', freq: 4000, decay: 0.02, peak: 0.15 });
+                },
+                // 機械鍵盤聲，每一下音高略有不同
+                typewriter(out) {
+                    burst(out, { freq: 2000 + Math.random() * 2500, q: 2, decay: 0.03, peak: 0.4 });
+                    tone(out, { type: 'triangle', freq: 160 + Math.random() * 80, decay: 0.03, peak: 0.12 });
+                },
+                // 沉重悶擊 + 小二度不和諧音
+                buttonPress(out) {
+                    tone(out, { freq: 120, freqEnd: 45, decay: 0.25, peak: 0.7 });
+                    tone(out, { type: 'square', freq: 466, decay: 0.15, peak: 0.05 });
+                    tone(out, { type: 'square', freq: 494, decay: 0.15, peak: 0.05 });
+                },
+                // 系統警告：三全音鋸齒波 + 快速顫音 + 靜電雜訊
+                warning(out) {
+                    const t = ctx.currentTime;
+                    const dur = 0.6;
+                    const lp = ctx.createBiquadFilter();
+                    lp.type = 'lowpass';
+                    lp.frequency.value = 1800;
+                    const trem = ctx.createGain();
+                    trem.gain.value = 0.5;
+                    const lfo = ctx.createOscillator();
+                    const lfoDepth = ctx.createGain();
+                    lfo.frequency.value = 18;
+                    lfoDepth.gain.value = 0.5;
+                    lfo.connect(lfoDepth);
+                    lfoDepth.connect(trem.gain);
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0.0001, t);
+                    g.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                    [233, 330].forEach(freq => {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, t);
+                        osc.frequency.linearRampToValueAtTime(freq * 0.94, t + dur);
+                        osc.connect(lp);
+                        osc.start(t);
+                        osc.stop(t + dur + 0.05);
+                    });
+                    lp.connect(trem);
+                    trem.connect(g);
+                    g.connect(out);
+                    lfo.start(t);
+                    lfo.stop(t + dur + 0.05);
+                    burst(out, { freq: 1200, q: 0.7, decay: 0.3, peak: 0.25 });
+                },
+                // 確認選擇：上行但沒有解決的三全音，留下懸念
+                select(out) {
+                    tone(out, { type: 'triangle', freq: 392, attack: 0.01, decay: 0.5, peak: 0.2 });
+                    tone(out, { type: 'triangle', freq: 554, at: 0.12, attack: 0.01, decay: 0.7, peak: 0.18 });
+                    heartbeat(out, 0.05, 0.6);
+                },
+                // 做出選擇：低音 C 托住，大調琶音慢慢往上散開，緊張感終於落地
+                resolve(out) {
+                    tone(out, { freq: 130.81, attack: 0.05, decay: 3, peak: 0.25 });
+                    [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+                        tone(out, { freq, at: i * 0.18, attack: 0.02, decay: 2.2, peak: 0.16 });
+                    });
+                }
+            };
+
+            function play(name, volume) {
+                if (!getCtx() || !SOUNDS[name]) return;
+                resume();
+                const out = bus(volume);
+                SOUNDS[name](out);
+                setTimeout(() => out.disconnect(), 1500);
+            }
+
+            // 背景：兩個相差 3Hz 的低頻音互相「拍」出不安的脈動 + 房間底噪 + 緩慢心跳
+            function startAmbience(volume) {
+                if (!getCtx() || ambience) return;
+                const t = ctx.currentTime;
+                const out = bus(0);
+                out.gain.setValueAtTime(0.0001, t);
+                out.gain.exponentialRampToValueAtTime(volume, t + 2);
+
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass';
+                lp.frequency.value = 280;
+                lp.connect(out);
+                const nodes = [55, 58].map(freq => {
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    g.gain.value = 0.25;
+                    osc.connect(g);
+                    g.connect(lp);
+                    osc.start();
+                    return osc;
+                });
+                nodes.push(noiseLoop(out, 'lowpass', 400, 0.04));
+
+                // 音訊尚未啟用時跳過，避免恢復時一次湧出好幾下心跳
+                const timer = setInterval(() => {
+                    if (isRunning()) heartbeat(out, 0, 0.5);
+                }, 1300);
+
+                ambience = { out, nodes, timer };
+            }
+
+            function stopAmbience() {
+                if (!ambience) return;
+                clearInterval(ambience.timer);
+                fadeOutAndStop(ambience);
+                ambience = null;
+            }
+
+            // 窒息段落：逐漸升高、變亮的低音 + 嘶聲 + 越來越快的心跳
+            function startPressure(duration, volume) {
+                if (!getCtx() || pressure) return;
+                resume();
+                const t = ctx.currentTime;
+                const out = bus(volume);
+
+                const drone = ctx.createGain();
+                drone.gain.setValueAtTime(0.0001, t);
+                drone.gain.exponentialRampToValueAtTime(1, t + duration);
+                drone.connect(out);
+
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass';
+                lp.Q.value = 4;
+                lp.frequency.setValueAtTime(200, t);
+                lp.frequency.exponentialRampToValueAtTime(2400, t + duration);
+                lp.connect(drone);
+
+                const nodes = [80, 85].map(freq => {
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, t);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 2, t + duration);
+                    g.gain.value = 0.2;
+                    osc.connect(g);
+                    g.connect(lp);
+                    osc.start(t);
+                    return osc;
+                });
+                nodes.push(noiseLoop(drone, 'highpass', 3000, 0.08));
+
+                let at = 0.2;
+                let gap = 0.9;
+                while (at < duration) {
+                    heartbeat(out, at, 1.4);
+                    at += gap;
+                    gap = Math.max(0.3, gap * 0.85);
+                }
+
+                pressure = { out, nodes };
+            }
+
+            function stopPressure() {
+                if (!pressure) return;
+                fadeOutAndStop(pressure);
+                pressure = null;
+            }
+
+            // 釋懷：溫暖的 Cmaj7 長音 + 像呼吸一樣緩慢開合的濾波 + 偶爾響起的五聲音階鈴聲
+            function startCalm(volume) {
+                if (!getCtx() || calm) return;
+                resume();
+                const t = ctx.currentTime;
+                const out = bus(0);
+                out.gain.setValueAtTime(0.0001, t);
+                out.gain.exponentialRampToValueAtTime(volume, t + 4);
+
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass';
+                lp.frequency.value = 900;
+                lp.connect(out);
+                const breath = ctx.createOscillator();
+                const breathDepth = ctx.createGain();
+                breath.frequency.value = 0.08;
+                breathDepth.gain.value = 400;
+                breath.connect(breathDepth);
+                breathDepth.connect(lp.frequency);
+                breath.start(t);
+
+                // 每個音配一個微微走音的分身，聲音更柔、更寬
+                const nodes = [130.81, 196.00, 329.63, 493.88]
+                    .flatMap(freq => [freq, freq * 1.003])
+                    .map(freq => {
+                        const osc = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = freq;
+                        g.gain.value = 0.08;
+                        osc.connect(g);
+                        g.connect(lp);
+                        osc.start(t);
+                        return osc;
+                    });
+                nodes.push(breath);
+
+                const bells = [523.25, 587.33, 659.25, 783.99, 880.00];
+                const timer = setInterval(() => {
+                    if (!isRunning() || Math.random() < 0.3) return;
+                    const freq = bells[Math.floor(Math.random() * bells.length)];
+                    tone(out, { freq, attack: 0.02, decay: 2.5, peak: 0.08 });
+                    tone(out, { freq: freq * 2, attack: 0.02, decay: 1.2, peak: 0.02 });
+                }, 1800);
+
+                calm = { out, nodes, timer };
+            }
+
+            function stopCalm() {
+                if (!calm) return;
+                clearInterval(calm.timer);
+                fadeOutAndStop(calm);
+                calm = null;
+            }
+
+            return { resume, play, startAmbience, stopAmbience, startPressure, stopPressure, startCalm, stopCalm };
+        })();
+
+        // ============ 音效名稱 ============
+        const audio = {
+            sfxClick: 'click',
+            sfxButtonPress: 'buttonPress',
+            sfxWarning: 'warning',
+            sfxSelect: 'select',
+            sfxTypewriter: 'typewriter',
+            sfxResolve: 'resolve'
+        };
+
+        // ============ 音效播放函數 ============
+        function playSFX(name, volume = 1) {
+            if (appState.audioMuted || !name) return;
+            synth.play(name, volume * AUDIO_CONFIG.sfxVolume);
+        }
+
+        // ============ 背景音樂控制 ============
+        function startAmbience() {
+            if (appState.audioMuted) return;
+            synth.startAmbience(AUDIO_CONFIG.bgAmbienceVolume);
+        }
+
+        function stopAmbience() {
+            synth.stopAmbience();
+        }
+
+        function startCalm() {
+            if (appState.audioMuted) return;
+            synth.startCalm(AUDIO_CONFIG.calmVolume);
+        }
+
+        // ============ 音量切換 ============
+        function toggleAudio() {
+            appState.audioMuted = !appState.audioMuted;
+            
+            if (appState.audioMuted) {
+                elements.audioToggle.textContent = '🔇';
+                elements.audioToggle.classList.add('muted');
+                stopAmbience();
+                synth.stopPressure();
+                synth.stopCalm();
+            } else {
+                elements.audioToggle.textContent = '🔊';
+                elements.audioToggle.classList.remove('muted');
+                if (appState.outcomeShowing) {
+                    startCalm();
+                } else if (appState.finalScreenShowing || appState.choiceScreenShowing) {
+                    startAmbience();
+                }
+            }
+        }
+
+        // ============ 初始化 ============
+        async function init() {
+            await DOM_READY_CHECK;
+            
+            console.log('[SYSTEM] Yuting_Thoughts_Draft.exe initializing...');
+            console.log('[AUDIO] Initializing audio system...');
+            
+            // 驗證 DOM 結構
+            if (!validateDOMStructure()) {
+                console.error('[SYSTEM] DOM structure validation failed!');
+                return;
+            }
+
+            setupInputInterception();
+            setupButtonInterception();
+            setupChoiceInteraction();
+            setupAudioControl();
+
+            // 延遲啟動背景音樂，確保系統完全就緒
+            setTimeout(() => {
+                startAmbience();
+                hideLoadingOverlay();
+                appState.systemReady = true;
+                console.log('[SYSTEM] System ready. Awaiting user interaction...');
+            }, 1000);
+        }
+
+        // ============ DOM 結構驗證 ============
+        function validateDOMStructure() {
+            const required = [
+                'mainWindow',
+                'messageInput',
+                'btnA',
+                'btnB',
+                'btnC',
+                'videoOverlay',
+                'fullscreenVideo',
+                'finalScreen',
+                'choiceScreen',
+                'outcomeScreen',
+                'audioToggle'
+            ];
+
+            for (const key of required) {
+                if (!elements[key]) {
+                    console.error(`[SYSTEM] Missing element: ${key}`);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // ============ 隱藏載入覆蓋層 ============
+        function hideLoadingOverlay() {
+            if (elements.loadingOverlay) {
+                elements.loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        // ============ 音頻控制設置 ============
+        function setupAudioControl() {
+            elements.audioToggle.addEventListener('click', toggleAudio);
+        }
+
+        // ============ 輸入框攔截邏輯 ============
+        function setupInputInterception() {
+            elements.messageInput.addEventListener('click', handleInputClick);
+            elements.messageInput.addEventListener('keydown', (e) => {
+                e.preventDefault();
+            });
+        }
+
+        // ============ 打字機計時器 ============
+        let typingInterval = null;
+
+        function handleInputClick() {
+            if (appState.videoPlaying || appState.buttonsDisabled || !appState.systemReady) return;
+            
+            // 如果正在打字，忽略點擊
+            if (typingInterval) return;
+
+            playSFX(audio.sfxClick);
+            elements.messageInput.value = '';
+            typeCompromiseText();
+        }
+
+        // ============ 逐字輸入妥協文字 ============
+        function typeCompromiseText() {
+            const text = CONFIG.COMPROMISE_TEXT;
+            let index = 0;
+
+            typingInterval = setInterval(() => {
+                if (index < text.length) {
+                    elements.messageInput.value += text[index];
+                    
+                    if (Math.random() > 0.3) {
+                        playSFX(audio.sfxTypewriter, AUDIO_CONFIG.typewriterVolume);
+                    }
+                    
+                    index++;
+                } else {
+                    clearInterval(typingInterval);
+                    typingInterval = null;
+                }
+            }, CONFIG.TYPEWRITER_SPEED);
+        }
+
+        // ============ 按鈕攔截邏輯 ============
+        function setupButtonInterception() {
+            [elements.btnA, elements.btnB, elements.btnC].forEach(btn => {
+                btn.addEventListener('click', handleButtonClick);
+            });
+        }
+
+        function handleButtonClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (appState.videoPlaying || appState.buttonsDisabled || !appState.systemReady) return;
+
+            console.log('[SYSTEM] User interaction detected. Initiating protocol...');
+            playSFX(audio.sfxButtonPress);
+
+            triggerGlitchEffect();
+            disableAllButtons();
+
+            setTimeout(() => {
+                playFullscreenVideo();
+            }, CONFIG.VIDEO_DELAY);
+        }
+
+        // ============ 螢幕故障效果 ============
+        function triggerGlitchEffect() {
+            const glitch = document.createElement('div');
+            glitch.className = 'glitch-effect';
+            document.body.appendChild(glitch);
+
+            playSFX(audio.sfxWarning, 0.8);
+            document.body.style.cursor = 'not-allowed';
+
+            setTimeout(() => {
+                glitch.remove();
+                document.body.style.cursor = 'default';
+            }, CONFIG.GLITCH_DURATION);
+        }
+
+        // ============ 禁用所有按鈕 ============
+        function disableAllButtons() {
+            appState.buttonsDisabled = true;
+
+            [elements.btnA, elements.btnB, elements.btnC].forEach(btn => {
+                btn.classList.add('disabled');
+                btn.disabled = true;
+            });
+        }
+
+        // ============ 全螢幕影片播放 ============
+        function playFullscreenVideo() {
+            console.log('[SYSTEM] Initiating video playback...');
+            appState.videoPlaying = true;
+            stopAmbience();
+            if (!appState.audioMuted) {
+                synth.startPressure((CONFIG.VIDEO_FALLBACK_TIMEOUT + 300) / 1000, AUDIO_CONFIG.pressureVolume);
+            }
+
+            elements.mainWindow.classList.add('fade-out');
+
+            setTimeout(() => {
+                elements.videoOverlay.classList.add('active');
+                
+                // 監聽影片結束
+                elements.fullscreenVideo.addEventListener('ended', handleVideoEnded, { once: true });
+                
+                const playPromise = elements.fullscreenVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.warn('[SYSTEM] Video playback failed. Activating fallback...');
+                        showFallbackSuffocation();
+                    });
+                }
+
+                // 影片超時保險：從按鈕點擊後開始計時
+                setTimeout(() => {
+                    if (appState.videoPlaying && !appState.finalScreenShowing) {
+                        console.log('[SYSTEM] Video timeout. Proceeding to final sequence...');
+                        handleVideoEnded();
+                    }
+                }, CONFIG.VIDEO_FALLBACK_TIMEOUT);
+            }, 300);
+        }
+
+        // ============ 備用窒息效果 ============
+        function showFallbackSuffocation() {
+            elements.fallbackSuffocation.classList.add('active');
+            
+            setTimeout(() => {
+                elements.fallbackSuffocation.classList.remove('active');
+                showFinalScreen();
+            }, 8000);
+        }
+
+        // ============ 影片播放完畢處理 ============
+        function handleVideoEnded() {
+            appState.videoPlaying = false;
+            elements.videoOverlay.classList.remove('active');
+            showFinalScreen();
+        }
+
+        // ============ 顯示終局螢幕 ============
+        function showFinalScreen() {
+            if (appState.finalScreenShowing) return;
+            
+            console.log('[SYSTEM] Entering final sequence...');
+            appState.finalScreenShowing = true;
+
+            elements.fallbackSuffocation.classList.remove('active');
+            elements.finalScreen.classList.add('active');
+            synth.stopPressure();
+            startAmbience();
+
+            typewriterFinalText();
+
+            setTimeout(() => {
+                showChoiceScreen();
+            }, CONFIG.CHOICE_REVEAL_DELAY + CONFIG.FINAL_TEXT.length * CONFIG.TYPEWRITER_SPEED);
+        }
+
+        // ============ 終局打字機效果 ============
+        function typewriterFinalText() {
+            const text = CONFIG.FINAL_TEXT;
+            let index = 0;
+
+            const typing = setInterval(() => {
+                if (index < text.length) {
+                    elements.typewriterText.textContent += text[index];
+                    if (text[index].trim()) {
+                        playSFX(audio.sfxTypewriter, AUDIO_CONFIG.typewriterVolume * 0.6);
+                    }
+                    index++;
+                } else {
+                    clearInterval(typing);
+                    console.log('[SYSTEM] Final sequence complete.');
+                }
+            }, CONFIG.TYPEWRITER_SPEED);
+        }
+
+        // ============ 選擇互動邏輯 ============
+        function setupChoiceInteraction() {
+            elements.choiceCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    selectChoice(card);
+                });
+            });
+
+            elements.submitChoiceBtn.addEventListener('click', submitChoice);
+            
+            // 返回按鈕
+            document.getElementById('backFromChoiceBtn').addEventListener('click', backFromChoice);
+            document.getElementById('backFromOutcomeBtn').addEventListener('click', backFromOutcome);
+            document.getElementById('restartBtn').addEventListener('click', restartExperience);
+
+            // 終局螢幕箭頭 → 點擊繼續到選擇螢幕
+            document.getElementById('continueArrow').addEventListener('click', () => {
+                playSFX(audio.sfxClick);
+                showChoiceScreen();
+            });
+        }
+
+        function selectChoice(card) {
+            playSFX(audio.sfxClick);
+
+            elements.choiceCards.forEach(c => {
+                c.classList.remove('selected');
+            });
+
+            card.classList.add('selected');
+            appState.selectedChoice = card.dataset.choice;
+            elements.submitChoiceBtn.disabled = false;
+        }
+
+        function submitChoice() {
+            if (!appState.selectedChoice) return;
+
+            // 緊張的背景淡出，換成落地的和弦
+            stopAmbience();
+            playSFX(audio.sfxResolve);
+            console.log(`[SYSTEM] User selected choice: ${appState.selectedChoice}`);
+
+            elements.choiceScreen.classList.remove('active');
+
+            setTimeout(() => {
+                showOutcomeScreen(appState.selectedChoice);
+            }, 600);
+        }
+
+        // ============ 顯示選擇螢幕 ============
+        function showChoiceScreen() {
+            appState.choiceScreenShowing = true;
+            elements.finalScreen.classList.remove('active');
+            elements.choiceScreen.classList.add('active');
+        }
+
+        // ============ 顯示結局螢幕 ============
+        function showOutcomeScreen(choice) {
+            const outcome = CONFIG.OUTCOMES[choice];
+
+            elements.outcomeTitle.textContent = outcome.title;
+            elements.outcomeContent.textContent = outcome.content;
+
+            elements.outcomeScreen.classList.add('active');
+            appState.outcomeShowing = true;
+            startCalm();
+            console.log('[SYSTEM] Outcome displayed. Session complete.');
+        }
+
+        // ============ 返回到終局螢幕 ============
+        function backFromChoice() {
+            playSFX(audio.sfxClick);
+
+            elements.choiceCards.forEach(c => c.classList.remove('selected'));
+            appState.selectedChoice = null;
+            elements.submitChoiceBtn.disabled = true;
+
+            elements.choiceScreen.classList.remove('active');
+            elements.finalScreen.classList.add('active');
+            appState.choiceScreenShowing = false;
+            appState.finalScreenShowing = true;
+
+            // 自動跳回選擇螢幕
+            setTimeout(() => {
+                if (appState.finalScreenShowing && !appState.choiceScreenShowing) {
+                    showChoiceScreen();
+                }
+            }, 2000);
+        }
+
+        // ============ 返回到選擇螢幕 ============
+        function backFromOutcome() {
+            playSFX(audio.sfxClick);
+            console.log('[SYSTEM] User requested to go back from outcome screen.');
+
+            // 回到抉擇，音樂也回到緊張
+            appState.outcomeShowing = false;
+            synth.stopCalm();
+            startAmbience();
+
+            // 隱藏結局螢幕，顯示選擇螢幕
+            elements.outcomeScreen.classList.remove('active');
+            elements.choiceScreen.classList.add('active');
+            
+            // 重置選擇狀態
+            elements.choiceCards.forEach(c => {
+                c.classList.remove('selected');
+            });
+            appState.selectedChoice = null;
+            elements.submitChoiceBtn.disabled = true;
+        }
+
+        // ============ 完全重新開始 ============
+        function restartExperience() {
+            playSFX(audio.sfxSelect);
+            console.log('[SYSTEM] User requested full restart.');
+
+            // 重置所有狀態
+            appState.videoPlaying = false;
+            appState.finalScreenShowing = false;
+            appState.choiceScreenShowing = false;
+            appState.selectedChoice = null;
+            appState.buttonsDisabled = false;
+            appState.outcomeShowing = false;
+            synth.stopCalm();
+
+            // 清空輸入框
+            if (typingInterval) {
+                clearInterval(typingInterval);
+                typingInterval = null;
+            }
+            elements.messageInput.value = '';
+
+            // 隱藏所有覆蓋層
+            elements.videoOverlay.classList.remove('active');
+            elements.fallbackSuffocation.classList.remove('active');
+            elements.finalScreen.classList.remove('active');
+            elements.choiceScreen.classList.remove('active');
+            elements.outcomeScreen.classList.remove('active');
+
+            // 恢復窗口和按鈕
+            elements.mainWindow.classList.remove('fade-out');
+            [elements.btnA, elements.btnB, elements.btnC].forEach(btn => {
+                btn.classList.remove('disabled');
+                btn.disabled = false;
+            });
+
+            // 重新啟動背景音樂
+            synth.stopPressure();
+            startAmbience();
+            document.body.style.cursor = 'default';
+
+            console.log('[SYSTEM] Experience restarted. Ready for new interaction.');
+        }
+
+        // ============ 防止不當操作 ============
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && 
+                (e.key === 'I' || e.key === 'C' || e.key === 'J')) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && appState.videoPlaying) {
+                e.preventDefault();
+            }
+        });
+
+        // ============ 啟用音訊（瀏覽器需要使用者先互動） ============
+        document.addEventListener('pointerdown', synth.resume);
+        document.addEventListener('keydown', synth.resume);
+
+        // ============ 啟動應用 ============
+        init();
+        
+        // ============ 頁面關閉時停止音樂 ============
+        window.addEventListener('beforeunload', () => {
+            stopAmbience();
+        });
+    </script>
+</body>
+</html>
