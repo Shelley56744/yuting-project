@@ -16,7 +16,7 @@
             background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
             font-family: "Courier New", monospace;
             color: #58a6ff;
-            overflow: hidden;
+            overflow-x: hidden;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -437,10 +437,21 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 40px;
             padding: 40px 20px;
             overflow-y: auto;
+        }
+
+        /* 用 auto margin 置中：內容比螢幕高時不會被切掉，可以捲動 */
+        .choice-screen > :first-child,
+        .outcome-screen > :first-child {
+            margin-top: auto;
+        }
+
+        .choice-screen > :last-child,
+        .outcome-screen > :last-child {
+            margin-bottom: auto;
         }
 
         .choice-screen.active {
@@ -584,7 +595,7 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 40px;
             padding: 40px 20px;
             overflow-y: auto;
